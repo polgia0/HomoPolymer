@@ -1,0 +1,131 @@
+%\VignetteIndexEntry{HomoPolymer: User Manual}
+\documentclass[a4paper,12pt]{article}
+%\usepackage[a4paper]{geometry}
+\usepackage[top=1.0in, bottom=1.0in, left=1in, right=1in]{geometry}
+\usepackage{float}
+\usepackage[T1]{fontenc} % Riga da togliere se si compila con PDFLaTeX
+\usepackage[utf8]{inputenc} % Consente l'uso caratteri accentati italiani
+\frenchspacing % forza LaTeX ad una spaziatura uniforme, invece di lasciare più spazio
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{varioref}
+\graphicspath{ {images/} }
+
+\begin{document}
+\title{\textbf{R package: HomoPolymer \\  \large {User Manual}}}
+\author{Gianmarco Polotti}
+\date{\today}
+\maketitle
+\section{Package Structure}
+
+The package structure with links among interconnected functions are shown below.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.7]{schema}
+\end{figure}
+
+The software may run either interactively using the graphical interfaces or in a batch mode calling directly the functions (prepare and integral). The first way is
+more comfortable and can be driven by the "Polymer ToolBar". Digitized data are preserved for the next use avoiding the tedious retyping.
+ The ToolBar proposes the three steps of model use in the right order :\\
+\begin{itemize}
+\item{ preparation of the dataset for  integration.}
+\item{ integration of the model.}
+\item{ plot of the results.}
+\item{optional data reset, i.e. all the previous conditions are deleted.}
+\end{itemize}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=1.0]{toolbar}
+\end{figure}
+The Polymer ToolBar is minimized when is not used and can be maximized again clicking on the R icon in the status bar at the bottom of your screen. Pay attention that when the menu in the 
+ToolBar is open it has the exclusive control. To get the control back, just close the menu and click on the console. In case you close the tool bar and you wants it back, just type on the console
+the command : $ polymer\_toolbar()$.\\
+The second way is for parameter determination if called with specific optimization functions. Data come to the models through three different sources:\\
+\begin{itemize}
+\item{ \emph{recipe.inp, process.inp, flow.inp}, with parameters regarding formulation, process and flow conditions respectively.}
+\item{ DBpp chemical - physical data for the different ingredients.}
+\item{DBk  kinetic and gel effect parameters.}
+\end{itemize}
+Do not forget to set \emph{interact=FALSE} to avoid the use of graphical functions. Results of the calculation are the two datasets: \emph{out.prepare} and \emph{out.integral}
+created in the Global environment after the call of each function.
+
+\section{Examples with water soluble monomers}
+
+Examples show the polymerization of Acrylic Acid, partially neutralized, in water. Two processes are shown: the first isothermal, the second 
+with the possibility of heat exchange through an external jacket at fix temperature $(T_j)$.\\
+The polymerization of Acrylic Acid is very much dependent on the pH and, when the conversion increases, the diffusional effects are strong. 
+To properly consider these possibilities, I check the correspondent conditions  in the "Computational Options" menu.\\
+In the following, I present the input and output for the isothermal polymerization. A basic set of plots is given at the end of each integration without
+user request. This plot gives:\\
+\begin{itemize}
+\item{Conversion vs. time}
+\item{Residual Monomer vs. time}
+\item{Temperature vs. time}
+\item{Average Molecular Weight vs. time}
+\end{itemize}
+\begin{figure}[H]
+\includegraphics[scale=0.6]{AA}\\
+\includegraphics[scale=0.9]{AAr}\\
+\centering
+\end{figure}
+Further graphs can be achieved by the Plot button on the Polymer ToolBar. Many combinations of variables are drawn depending of the user interest. As example, find  some 
+trends on kinetic constants and pH in the figures.\\
+\begin{figure}[H]
+\includegraphics[scale=0.5]{fig1}\\
+\includegraphics[ scale=0.5]{fig2}\\
+\includegraphics[ scale=0.5]{fig3}\\
+\centering
+\end{figure}
+The second simulation comes when heat exchanged is allowed. This is done checking out the isothermal item in the "Computational Options" menu. Then calculations consider the 
+values in the box of "Heat Transfer Coefficient" and the " Jacket Temperature" (neglected in the isothermal case). Of course, the main effect is seen in the temperature variation
+ but also the polymer
+micro structure varies very much. \\
+\begin{figure}[H]
+\includegraphics[scale=0.5]{AA1}\\
+\includegraphics[scale=0.8]{AA1r}\\
+\centering
+\end{figure}
+Some specific plots regarding the kinetic are also presented. Although here is not the case to comment the 
+changes, it is evident that the the initial hypothesis have a strong impact on the physical results too.\\ 
+\begin{figure}[H]
+\includegraphics[scale=0.5]{fig6}\\
+\includegraphics[ scale=0.5]{fig4}\\
+\includegraphics[ scale=0.5]{fig5}\\
+\centering
+\end{figure}
+\section{Examples with oil soluble monomers}
+Oil soluble monomers are much simpler to deal with since any dissociation equilibrium is not involved. However, large differences on micro structure are found by rejecting the hypothesis of linear structure 
+for the polymer chain.\\
+\begin{figure}[H]
+\includegraphics[scale=0.5]{EA}\\
+\includegraphics[scale=0.8]{EAr}\\
+\centering
+\end{figure}
+ Monomers show different reactivity and a careful selection of the process conditions need to be made. It is possible that the reaction goes too fast (or too slow) and results may 
+look strange. I suggest to start first using isothermal conditions since temperature has a strong effect on the polymer kinetic.\\
+As example I show a couple of batch polymerizations of Ethylacrylate and Methylmethacrylate in solution. The input data used are in the figures as well the results of the simulations. The trends 
+are similar but the different reactivities of the two monomers are evident looking at the time scale. 
+\begin{figure}[H]
+\includegraphics[scale=0.5]{MMA}\\
+\includegraphics[scale=0.8]{MMAr}\\
+\centering
+\end{figure}
+The trend of the Molecular Weight shows that the polymer chains have not constant length  but they decrease their size with time. In the figure the actual Molecular Weight, i.e. the polymer produced at time t,
+decreases fast and slowly moves down the accumulated Molecular Weight, i.e. average on the amount of polymer made in each second. This is clearly due to the variation of monomer/initiator ratio
+vs. time as typical of batch process. \\
+\begin{figure}[H]
+\includegraphics[scale=1.0]{fig7}\\
+\centering
+\end{figure}
+\section{Next Steps}
+I project to increase the functionality of the package including the following improvements:
+\begin{itemize}
+\item{ parameter estimation : a very interesting method that mixes mathematical and physical knowledge in the statistical determination of polymerization parameters is given in : 
+ Lona, L. M. F., Penlidis A., 2005, \emph{ A Practical Approach To Simulate Polymerizations with Minimal Information}, Ind.Eng.Chem.Res.,44,2634-2648.}
+\item{ multimonomer system using the pseudokinetic model as in : Hamielec A. E., MacGregor J. F., Penlidis A. 1987 \emph{Multicomponent Free-Radical Polymerization in Batch, Semi Batch and Continuous Reactors}, Makromol.
+Chem. Macromol.Symp.,10/11, 521-570, and in Gao J., Penlidis A. 1998 \emph{A Comprehensive Simulator/Database Package for Reviewing Free-Radical Copolymerizatios}, J.M.S., Rev. Macromol. Chem. Phys. C38(4), 651-780 }
+\end{itemize}
+
+
+\end{document}

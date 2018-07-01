@@ -1,0 +1,609 @@
+%\VignetteIndexEntry{HomoPolymer: Data and Equations}
+\documentclass[a4paper,12pt]{article}
+%\usepackage[a4paper]{geometry}
+\usepackage[top=1.5in, bottom=1.5in, left=1in, right=1in]{geometry}
+\usepackage{float}
+\usepackage[T1]{fontenc} % Riga da togliere se si compila con PDFLaTeX
+\usepackage[utf8]{inputenc} % Consente l'uso caratteri accentati italiani
+\frenchspacing % forza LaTeX ad una spaziatura uniforme, invece di lasciare più spazio
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{varioref}
+
+\begin{document}
+\title{\textbf{R package: HomoPolymer \\  \large {Data and Model Equations}}}
+\author{Gianmarco Polotti}
+\date{\today}
+\maketitle
+\section{Abstract}
+R is a very well known software for statistical computing. However, since the addition of packages mentioned in the views: \emph{DifferentialEquations} and \emph{NumericalMathematics}\cite{rcran}, it  is
+also a wonderful tool for mathematical modelling. In my opinion, R is the best software available to study scientific and technical problems because it is able to merge superior capability in
+data processing and reliable tools for theoretical equations handling. With R is possible to merge knowledge coming from experiments and knowledge coming from theories and to give a \emph{global overview}
+of the event in many disciplines. Recently, several graphical routines are made available\cite{law2012} and it becomes easy to develop user friendly interfaces. Hopefully, this will spread out the possibility 
+to have a global overview (data and theories) to a broader range of people with a modest informatic background. Encouraging this trend is the main goal of this work. 
+\section{Package Preface}
+This package deals with radical polymerization modelling. It describes and solves the material, energy and micro structure balance equations needed to describe the polymer formation. It is limited to the polymerization 
+of a single monomer (homo polymer) in a single physical phase (mass or solution). The package allows the possibility to run the polymerization in batch, semi continuous or continuous process. Despite these limitations, it becomes 
+evident that the number of equations and data required is not trivial. Many effects typical of radical polymerization are taken in account such as: diffusion controlled kinetic, segmental diffusion, non linear micro structure, etc.
+Several models have been proposed in the literature over the last four decades in order to simulate free radical homo polymerization. Theoretical models are proposed with different degree of complexity and a huge 
+amount of chemical - physical data were generated and published in the specialized literature. The large number of  theories and data make radical polymerization a fruitful arena for the statistical analysis.
+A pioneering work on statistical review of radical polymerization was done in the second half of the 1990s and published in reference \cite{gao1996}, \cite{kui1992}, \cite{law2012}. Authors develop a complete model 
+for radical polymerization, they describe in details the equations and perform a huge optimization for the parameter determination. They also built a model in Microsoft Qbasic 4.5 to manage their impressive work. The considered 
+systems include 12 monomers as well other reaction components such us initiators, solvents, chain transfer agents (CTA), catalytic chain transfer agents (CCTA), inhibitors etc. The list of monomers and other ingredients are 
+ in the several tables. \\
+\begin{table}
+\caption{Monomer List}
+\begin{center}
+\begin{tabular}{ c | l }
+   \hline                       
+  Symboly & Name\\
+  \hline  
+   ${\mathit{AA}}$ & Acrylic Acid \\
+   ${\mathit{AN}}$ & ACryloNitrile \\
+   ${\mathit{BA}}$ & Butyl Acrylate \\
+   ${\mathit{EA}}$ & Ethyl Acrylate \\
+   ${\mathit{pMeS}}$ & p-Methyl Styrene \\
+   ${\mathit{MA}}$ & Methyl Acrylate \\
+   ${\mathit{MAA}}$ & MethaAcrylic Acid \\
+   ${\mathit{MMA}}$ & MethylMethaAcrylate \\
+   ${\mathit{S}}$ & Styrene\\
+   ${\mathit{Va}}$ & Vinyl Acetate \\
+\end{tabular}
+\end{center}
+\end{table}
+\begin{table}
+\caption{Solvent List}
+\begin{center}
+\begin{tabular}{ c | l }
+   \hline                       
+  Symboly & Name\\
+  \hline  
+   ${\mathit{B}}$ & Benzene \\
+   ${\mathit{EAc}}$ & EthylAcetate \\
+   ${\mathit{T}}$ & Butyl Acrylate \\
+   ${\mathit{EA}}$ & Toluene \\
+   ${\mathit{tBA}}$ & t-ButylAlcohol \\
+   ${\mathit{H2O}}$ & Water \\
+\end{tabular}
+\end{center}
+\end{table}
+\begin{table}
+\caption{Initiator List}
+\begin{center}
+\begin{tabular}{ c | l }
+   \hline                       
+  Symboly & Name\\
+  \hline  
+   ${\mathit{AIBME}}$ &2,2-Azobisisobutyromethylether \\
+   ${\mathit{AIBN}}$ & 2,2-Azobisisobutyronitrile \\
+   ${\mathit{BPO}}$ & Dibenzoyl Peroxide \\
+   ${\mathit{K_2S_2O_8}}$ & Potassium Persulfate \\
+\end{tabular}
+\end{center}
+\end{table}
+\begin{table}
+\caption{Transfer Agent  List}
+\begin{center}
+\begin{tabular}{ c | l }
+   \hline                       
+  Symboly & Name\\
+  \hline  
+   ${\mathit{CTC}}$ &Carbon Tetrachloride \\
+   ${\mathit{COBF}}$ & Cobaloxime Boron Fluoride \\
+\end{tabular}
+\end{center}
+\end{table}
+\begin{table}
+\caption{Initiator List}
+\begin{center}
+\begin{tabular}{ c | l }
+   \hline                       
+  Symboly & Name\\
+  \hline  
+   ${\mathit{O2}}$ & Oxygen\\
+   ${\mathit{DPPH}}$ & 2,2-diphenyl-1-picrylhydrazylhydrate \\
+   ${\mathit{MeHQ}}$ & MethylHydroquinone \\
+\end{tabular}
+\end{center}
+\end{table}
+The package is built on the structure suggested by these papers and implements the same model equations, moreover it uses the "Optimal Set of Parameters" as highlighted in  \cite{kui1992} and \cite{law2012}. However, any code 
+does not come from the original publications. All the model equations are solved using the package deSolve \cite{soetaert2010} and other R functions. I tried to implement the same functionalities described in the original papers but the 
+execution is not guarantee to be the same. The reason why I tried to be very close to the references  is because the package  user can easily find detailed model explanations on them. Many of the choices in the model come after a careful
+and long process that authors  reviewed and clarified. Finally, it is  important to summarize what \cite{gao1996} defines as usefulness of modelling:
+\begin{itemize}
+  \item Model enhances our process understanding since it directs further experimentation.
+  \item Model is useful for process design, parameter estimation, sensitivity analysis, and process simulation.
+  \item Model is useful for process optimization, especially when dealing with highly non linear problems.
+  \item Model is useful for safety consideration.
+  \item Model is helpful for optimal sensor selection an testing and process control  in general.
+  \item Model trains new personnel and educates students.
+\end{itemize}
+ 
+\section{Model Differential Equations}
+
+A simulation run is carried out by simultaneously integrating numerically the model ordinary differential equations (odes) and handling in parallel the auxiliary algebraic equations. The numerical integration is made by a LSODAR integrator since the
+odes system is stiff and it has many constrains given by the process conditions and chemical/physical limits. Since the model is able to deal only with homogeneous systems the combination of monomer and solvent must be consistent. So, acrylic and methacrylic acids are the only monomers polymerizable in water. In organic solvents all the monomers can be polymerized. User has to be aware of these physical limits for the recipe compilation. The list of solvents and other ingredients are defined in the tables.
+The number of equations in the ode system may vary depending of the user choices. For water soluble polymerization the possibility that the monomer dissociates has to be considered. So the mass balance of the monomer has to combined with the
+mass balance of the dissociate form. Additionally, the possibility of ion pairs formation causes the introduction of several other equations.\\
+The energy balance may also change depending if an isothermal process is chosen. Micro structural equations, i. e.  balance equations that regulate the moments of the molecular weight distribution, are modified by the user choice of linear or branching polymer structure.\\
+The possibility to choose either diffusional or reactive effects  on polymerization, termination and initiation kinetic rate constants increase the ways of system integration.\\
+User must be aware that each of his choice means a chemical - physical modification of the reaction and not only a mathematical difference. So, the integration is not guarantee in all the cases. User may see the impact of different effects on the behaviour of polymer formation.\\
+\begin{table}
+\caption{Quantity integrate by the model and passed by vector \emph{ y}}
+\begin{center}
+\label{tab:y}
+\scalebox{0.8}{
+\begin{tabular}{ c | c | c | l }
+   \hline                       
+   Quantity & Symbol & Units & Meaning\\
+  \hline  
+   $M$ & M & mol/L & Monomer molar concentration \\
+   $X$ & X & - & Molar conversion\\
+   $V_l$ & Vl & L & Reaction liquid volume \\
+   $\mathit{HA}$ & HA & mol/L & Undissociated monomer molar concentration \\
+   $I$ & I & mol/L & Initiator molar concentration \\
+   $S$ & S & mol/L & Solvent molar concentration \\
+   $P$ & P & mol/L & Polymer molar concentration \\
+   $Z$ & Z & mol/L & Inhibitor molar concentration \\
+   $\mathit{CTA}$ & CTA & mol/L & Chain Transfer Agent molar concentration\\      
+   $\mathit{CCTA}$ & CCTA & mol/L &Catalytic Chain Transfer Agent molar concentration \\     
+   $\mathit{Na}$ & Na & mol/L & Sodium Cation molar concentration \\
+   $T$ & T & k & Temperature \\
+   $Mn_m$ & Mnm & mol$^2$/g & Number average molecular weight \\
+   $Mw_m$ & Mwm & g & Weight average molecular weight \\
+   $\mu_0$ & Mu0 & - & 0-order moment non linear MWD \\
+   $\mu_1$ & Mu1 & - & 1-order moment non linear MWD \\
+   $\mu_2$ & Mu2 & - & 2-order moment non linear MWD \\
+   $\mathit{BN3}$ & BN3 & - & Average number tri functional branches \\
+   $\mathit{BN4}$ & BN4 & - & Average number tetra functional branches \\
+\end{tabular}}
+\end{center}
+\end{table}
+Variables that are integrated over the time are collected in the vector \emph{y} and detailed in the \vpageref[above table][table ]{tab:y}. 
+ Differential equations associated with each variables are written herebelow.\\
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( M \big) = F_{in} u_M \ - K_{pp} \ M \ R \ V_l \ -  F_{out} z_M
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( X \big) =\frac{\frac{\mathrm d M}{\mathrm d t} }{M_0}
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( V_l \big) = \frac{\mathit{MW_M}}{1000} \ \left(\frac{1}{\rho_M}-\frac{1}{\rho_P}\right) \frac{\mathrm d M}{\mathrm d t} \ + \frac{\mathit{MW_M}}{1000} \ M \ \left(\frac{\frac{\mathrm d \rho_P}{\mathrm d t} }{\rho_M}-\frac{\frac{\mathrm d \rho_M}{\mathrm d t} }{\rho_P}\right) \ \frac{\mathrm d T}{\mathrm d t} 
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mathit{HA}\big) = -K_p \  R  \  \mathit{HA}\  V_l
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( I \big) =F_{in} u_I \ - K_d \ I  \ V_l \ -F_{out} z_I
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( S \big) = F_{in} u_S \ - K_{fS} \ S  \ R \ V_l \ -F_{out} z_S
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( P \big) = K_{pp} \ M \ R \ V_l \ -  F_{out} z_P
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( Z \big) = F_{in} u_Z \ - K_{fZ} \ Z \ R \ V_l \ -F_{out} z_Z
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mathit{CTA} \big) = F_{in} u_{CTA} \ - K_{fCTA} \ \mathit{CTA}  \ R \ V_l \ -F_{out} z_{CTA}
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mathit{CCTA} \big) =F_{in} u_{CCTA} \ - K_{fCCTA} \ \mathit{CCTA}  \ R \ V_l \ -F_{out} z_{CCTA}
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mathit{Na} \big) =F_{in} u_{Na}  -F_{out} z_{Na}
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( T \big) = 0   \quad isothermal \quad case
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( T \big) = \frac{ F_{in} H_{in} \ - K_{pp} \ M \ R \ V_l \ \mathit{\Delta H_p} \ - F_{out} H \ - \mathit{UA}(T-T_j)}{ V_l \rho C_p}
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( Mn_m \big) =  \frac{ K_{pp} \ M \ R \ V_l }{\mathit{Mn}}
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( Mw_m \big) = K_{pp} \ M \ R \ V_l \ \mathit{Mw}
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mu _0 \big) = \left(\tau + \beta /2 - \frac{K_p^{**} \mu_1}{K_{pp}M}-\frac{K_p^{*} \mu_0}{K_{pp}M}\right) \ K_{pp} \ M \ R \ V_l \ -  F_{out} \mu_0 V_l
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mu _1 \big) = \left(\tau -\frac{K_{td} R}{K_{pp}M}\right)\ K_{pp} \ M \ R \ V_l \ -  F_{out} \mu_1 V_l
+\end{equation}
+\begin{align}
+\frac{\mathrm d}{\mathrm d t} \big( \mu _2 \big) =&\left( \gamma +2 \left(1 +\frac {K_p^{*} \mu_1 + K_p^{**} \mu_2}{K_{pp}M}\right) \frac{\eta }{\gamma } + \frac{K_{tc} \ R}{K_{pp}M} {(\frac{\eta }{\lambda })}^{2}\right)\ K_{pp} \ M \ R \ V_l \nonumber \\ & -  F_{out} \mu_2 V_l
+\end{align}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mathit{BN3}\big) = (K_{fp} \mu_1 R + K_p^* \ R \ \mu_0 \ \mathit{BN3} \ F_{out} ) \ V_l
+\end{equation}
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t} \big( \mathit{BN4} \big) = (K_p^{**} \mu_2 R -\mu_0 \ \mathit{BN4} \ F_{out} ) \ V_l
+\end{equation}
+\\
+with $u_i$ and $z_i$  molar fraction of component $i$ in the feed and reactor respectively.\\
+
+Together with the ode system a set of algebraic equations are associated to evaluate the actual value of the many quantities required for the integration. In the package model, the algebraic system is explict, although not linear, i. e. equations can be easily 
+solved following the right order. This makes the calculations simple and fast. The algebraic equations are described in the "Input  Data and Algebric Equations" paragraph together with the meaning of the chemical-physical parameters.  
+
+\section{Input Data and Algebraic Equations}
+
+The model integration requires several data coming from different areas: chemical-physical properties, process conditions, semi empirical theories, etc. These data are delivered to the ode integrator in part by the vector \emph{pars} and in part by
+the direct computation by the model functions. Let's briefly review them.\\
+\begin{table}
+\caption{Chemical - physical data  in vector \emph{pars}}
+\begin{center}
+\scalebox{0.8}{
+\begin{tabular}{ c | c | c | l }
+   \hline                       
+   Quantity & Symbol & Units & Meaning\\
+  \hline  
+   $\mathit{MW_M}$ &MWM & g/mol & Monomer molecular weight \\
+   $\mathit{MW_I}$ &MWI & g/mol & Initiator molecular weight \\
+   $\mathit{MW_Z}$ &MWZ & g/mol & Inhibitor molecular weight \\
+   $\mathit{MW_S}$ &MWS & g/mol & Solvent molecular weight \\
+   $\mathit{MW_{CTA}}$ &MWCTA & g/mol & Transfer Agent molecular weight \\
+   $\mathit{MW_{CCTA}}$ &MWCCTA & g/mol & Catalytic Transfer Agent molecular weight \\
+   $\mathit{MW_{Na}}$ &MWNa & g/mol & Sodium Cation molecular weight \\
+   $\mathit{H_0}$ &H0& cal/mol & Reference state Enthalpy \\
+   $\mathit{C_{pM}}$ &CpM & cal/kg K & Monomer heat capacity \\
+   $\mathit{C_{pS}}$ &CpS &  cal/kg K  & Solvent  heat capacity \\
+   $\mathit{C_{pP}}$ &CpP &  cal/kg K & Polymer  heat capacity \\
+   $K_{\mathit{disM}}$ & KdisM &  - & Dissociation pKa of acidic monomer \\
+   $K_{\mathit{disP}}$ & KdisM &  - &  Dissociation pKa of acidic polymer \\
+   $\rho_{M2} $ & roM2 &  Kg/L K &  constant $\frac{d \rho_M}{dT}$ for monomer \\
+   $\rho_{P2} $ & roP2 &  Kg/L K &  constant $\frac{d \rho_P}{dT}$ for polymer \\
+   $\mathit{\Delta H}_p$ & DHp &  cal/mol & Reaction Enthalpy  \\
+\end{tabular}}
+\end{center}
+\end{table}
+Chemical-physical data are required for the substances chosen in the reacting medium. These data are detailed in the table and 
+some functions, i.e. density vs. temperature, must be built at the beginning of the integration.\\
+\begin{equation}
+\rho_M = \rho_{M1} - \rho_{M2} (T-273.16)
+\end{equation}
+\begin{equation}
+\rho_S= \rho_{S1} - \rho_{S2} (T-273.16)
+\end{equation}
+\begin{equation}
+\rho_P = \rho_{P1} - \rho_{P2} (T-273.16)
+\end{equation}
+A massive amount of data are required in order to describe the kinetic system. All the kinetic constants describing propagation,
+ termination by transfer to monomer, polymer, solvent, agent and inhibitor, bimolecular termination by combination and disproportion,
+ intermolecular and external branching, etc. must be defined. Since all of them are very much temperature dependent, at least one pre-exponential 
+ factor and an activation energy are required. See below the equations and the data meaning in the table.
+\begin{table}
+\caption{Kinetic functions }
+\begin{center}
+\scalebox{0.6}{
+\begin{tabular}{ l | l | c | l }
+   \hline                       
+   Quantity & Symbol & Units & Meaning (function and parameters)\\
+  \hline  
+   $K_\mathit{ratio}$ &Kratio & -&Reduction of reactivity in dissociated species\\
+   $K_{d1}$ & Kd1 &  1/min & Decomposition of ${\mathit{K_2S_2O_8}}$\\
+   $K_{d2}$ & Kd2 &  1/min & Decomposition of ${\mathit{K_2S_2O_8}}$ \\               
+   $K_{d}, K_{d0}, E_d$ &Kdf, Kd0, Ed& 1/min, cal/mol & Decomposition of initiator\\
+   $K_{p}, K_{p0}, E_p$ &Kpf, Kp0, Ep& L/mol min, cal/mol & Monomer propagation\\
+   $K_{fM}, K_{fM0}, E_{fM}$ &KfM, KfM0, EfM& L/mol min, cal/mol & Transfer to monomer\\
+   $K_{fS}, K_{fS0}, E_{fS}$ &KfS, KfS0, EfS& L/mol min, cal/mol & Transfer to solvent\\
+   $K_{fCTA}, K_{fCTA0}, E_{fCTA}$ &KfCTA, KfCTA0, EfCTA& L/mol min, cal/mol & Transfer to transfer agent\\
+   $K_{fCCTA}, K_{fCCTA0}, E_{fCCTA}$ &KfCCTA, KfCCTA0, EfCCTA& L/mol min, cal/mol & Transfer to catalytic TA\\
+   $K_{fZ}, K_{fZ0}, E_{fZ}$ &KfZ, KfZ0, EfZ& L/mol min, cal/mol & Transfer to inhibitor\\
+   $K_{fP}, K_{fP0}, E_{fP}$ &KfP, KfP0, EfP& L/mol min, cal/mol & Transfer to polymer\\
+   $K_{p}^{*}, K_{p0}^{*}, E_p^{*}$ &Kps, Kp0s, Eps& L/mol min, cal/mol & Terminal double bond \\
+   $K_{p}^{**}, K_{p0}^{**}, E_p^{**}$ &Kpss, Kp0ss, Epss& L/mol min, cal/mol & Internal terminal double bond\\
+   $K_{t}, K_{t0}, E_t$ &Ktf, Kt0, Et& L/mol min, cal/mol & Overall bimolecular termination\\
+   $K_{tc}, K_{tc0}, E_{tc}$ &Ktc, Ktc0, Etc& L/mol min, cal/mol & Bimolecular termination by combination \\
+   $K_{td}, K_{td0}, E_{td}$ &Ktd, Ktd0, Etd& L/mol min, cal/mol & Bimolecular termination by disproportionation\\
+\end{tabular}}
+\end{center}
+\end{table}
+\begin{equation}
+K_{d1}=1.178855e16 e^{-\frac{28925}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{d2}=1.3e15 e^{-\frac{27756.9}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_d=K_{d0}e^{-\frac{E_d}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_p=K_{p0}e^{-\frac{E_p}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{fM}=K_{fM0}e^{-\frac{E_{fM}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{fS}=K_{fS0}e^{-\frac{E_{fS}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{fCTA}=K_{fCTA0}e^{-\frac{E_{fCTA}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{fCCTA}=K_{fCCTA0}e^{-\frac{E_{fCCTA}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{fZ}=K_{fZ0}e^{-\frac{E_{fZ}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{fP}=K_{fP0}e^{-\frac{E_{fP}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_p^{*}=K_{p0}^{*}e^{-\frac{E_p^{*}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_p^{**}=K_{p0}^{**}e^{-\frac{E_p^{**}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{t}=K_{t0}e^{-\frac{E_{t}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{td}=K_{td0}e^{-\frac{E_{td}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{tc}=K_{tc0}e^{-\frac{E_{tc}}{1.987 T}}
+\end{equation}
+Note that the use of eqs (24) and (25) is limited to the use of Potassium Persulphate as water soluble initiator.\\
+Significant advances have been made in polymerization kinetic over the entire conversion range by description of
+diffusion controlled events and solvent effect. Segmental diffusion and diffusion controlled termination are both 
+considered in the model. Segmental diffusion takes place as each chain moves through a variety of conformations by way of backbone rotations. Diffusion controlled regime comes at the later stage of polymerization when the mixture is too viscous
+for polymer radical to move, so the radical centre moves only by addition of new monomer molecules via propagation.
+In order to consider these effects new variables in the table and equations are introduced under the common term of \emph{Gel Effect parameters}. 
+Please, see detailed explanation of their meaning and use on the references.
+\begin{table}
+\caption{Gel effect parameters in vector \emph{pars}}
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{ c | c | c | l }
+   \hline                       
+   Quantity & Symbol & Units & Meaning\\
+  \hline  
+   $A_{kt}$ &Akt & - & Parameter for gel effect on bimolecular termination \\
+   $E_{kt}$ &Ekt & cal/mol & Parameter for gel effect on bimolecular termination  \\
+   $\mathcal{A}$ &A& - &  Parameter for gel effect on bimolecular termination  \\
+   $\mathit{Mw}_{r}$ &Mwr& g/mol & Molecular weight when gel effect starts \\
+   $\mathit{Vf }_{r}$ &Vfr&  & Free volume when gel effect starts \\
+   $A_{kp}$ &Akp & - & Parameter for gel effect on propagation \\
+   $E_{kp}$ &Ekp& cal/mol & Parameter for gel effect on propagation   \\
+   $\mathcal{B}$ &B& - &  Parameter for gel effect on propagation   \\
+   $A_{kd}$ &Akd & - & Parameter for gel effect on initiator efficiency\\
+   $E_{kd}$ &Ektd& cal/mol & Parameter for gel effect on initiator efficiency\\
+   $V_{0fM}$ &V0fM& - & Free volume for Monomer at its glass temperature\\
+   $V_{0fS}$ &V0fS& - & Free volume for Solvent at its glass temperature\\
+   $V_{0fP}$ &V0fP& - & Free volume for Polymer at its glass temperature\\
+   $\alpha_{M}$ &alfaM & 1/K & Free volume expansion coefficient for Monomer\\
+   $\alpha_{S}$ &alfaS & 1/K & Free volume expansion coefficient for Solvent\\
+   $\alpha_{P}$ &alfaP & 1/K & Free volume expansion coefficient for Polymer\\
+   $T_{gM}$ & TgM & K & Glass transition for Monomer\\
+   $T_{gS}$ & TgS & K & Glass transition for Solvent\\
+   $T_{gP}$ & TgP & K & Glass transition for Polymer\\
+   $\delta$ &delta& K & Segmental diffusion parameter \\
+   $ a$ & a & - & End to end distance of the number of monomers  \\
+   $j_c $ & jc & - & Entanglement spacing for pure polymer\\
+   $\sigma$ & sigma & A & Lennard-Jones diameter \\
+\end{tabular}}
+\end{center}
+\end{table}
+\begin{equation}
+V_f=V_{0fM}+\alpha_M (T-T_{gM}) \Phi_M+V_{0fS}+\alpha_M (T-T_{gS}) \Phi_S+V_{0fP}+\alpha_P (T-T_{gP}) \Phi_P
+\end{equation}
+\begin{equation}
+K_3=A_{kt}e^{-\frac{E_{kt}}{1.987 T}}
+\end{equation}
+\begin{equation}
+K_{\mathit{3test}}=\sqrt{Mw}e^{\frac{\mathcal{A}}{V_f}}
+\end{equation}
+\begin{equation}
+\phi_t =\left( \frac{Mw_{r}}{Mw}\right)^ {1.75}e^{-\mathcal{A}  \left( \frac{1}{V_f}-\frac{1}{V_{fr}}\right)   }
+\end{equation}
+\begin{equation}
+V_{\mathit{fcr}}=A_{kp}e^{-\frac{E_{kpt}}{1.987 T}}
+\end{equation}
+\begin{equation}
+\phi_p=e^{-\mathcal{B}\left( \frac{1}{V_f}-\frac{1}{V_{fr}} \right)}
+\end{equation}
+\begin{equation}
+\phi_d=A_{kd}e^{-\frac{E_{kd}}{1.987 T}}
+\end{equation}
+\begin{equation}
+\phi_s =1+ \delta_M \left( \frac{P}{V_l} \right)
+\end{equation}
+\begin{equation}
+K_{\mathit{tr_{min}}}=4 \pi a^2 \frac{\sigma}{3}
+\end{equation}
+\begin{equation}
+K_{\mathit{tr_{max}}}=8\pi a^3 \frac{\sqrt{j_c}}{2}
+\end{equation}
+with $\Phi_i$ volumetric fraction of i compound and $\phi_j$ reduction of kinetic constant caused by effect j.\\
+The simulation of carboxylic acid polymerization in aqueous phase adds a lot of new equations to the system because of 
+the strong pH dependent characteristics. A small increase in the pH of the reaction medium will increase the rate of 
+polymerization sharply in the low and middle pH range. The monomer and polymer dissociation causes the introduction of dissociation 
+equilibrium equations and,  for the pH above the neutrality, the formation of \emph{ion pairs}. Following this theory the poly acid 
+macromolecules are capable of binding the cations present in the aqueous solution (the model consider only the most common $Na^{+}$ counterion). 
+The effect of this association gives an increase of the polymerization rate.
+To handle anionic monomers, new equations are necessary as given below.\\
+\begin{equation}
+A^{-} =M - \ \mathit{HA}
+\end{equation}
+\begin{equation}
+\mathit{pH}=-log_{10}\left(\frac{\mathit{HA}}{A^{-}}\right)+\mathit{pH_0}+log_{10}\left(\frac{\mathit{HA_0}}{M_0-\mathit{HA_0}}\right)
+\end{equation}
+\begin{equation}
+\alpha_P = \frac{1}{1+10^{\mathit{pKP}-pH}}
+\end{equation}
+\begin{equation}
+\alpha_R = \frac{1}{1+10^{\mathit{pKR}-pH}}
+\end{equation}
+\begin{equation}
+\mathit{HP} =\frac{ P}{1+\alpha_P}
+\end{equation}
+\begin{equation}
+P^{-} =\frac{\alpha_P P}{1+\alpha_P}
+\end{equation}
+\begin{equation}
+\mathit{HR} =\frac{R}{1+\alpha_R}
+\end{equation}
+\begin{equation}
+R^{-} =\frac{\alpha_R R}{1+\alpha_R}
+\end{equation}
+\begin{equation}
+\mathit{Kc}=3X^2-3.17X+2.9
+\end{equation}
+\begin{equation}
+\mathcal{B} = \mathit{Kc}(\mathit{HP} -\mathit{Na}-P )-1
+\end{equation}
+\begin{equation}
+\mathcal{C} = \mathit{Kc}\mathit{Na}(P-\mathit{HP} )
+\end{equation}
+\begin{equation}
+P_c = \frac{-\mathcal{B} \sqrt{\mathcal{B}^2-4\mathit{Kc}\mathcal{C}}}{2\mathit{Kc}}
+\end{equation}
+\begin{equation}
+R_c = \mathit{Kc} (\mathit{Na}-P_c)R^{-} 
+\end{equation}
+\begin{equation}
+K_{pp} = K_p \left( \frac{\mathit{HA}}{M}+K_\mathit{ratio}\frac{\mathit{HR}A^{-}}{R \ M}+K_\mathit{ratio}\frac{R_c \ A^{-}}{R \ M}\right)
+\end{equation}
+Note that the sole use of eq. (57) limits the model to ionic pairs made by $Na$ cations, but no other data are available for different ions.
+Finally, we note that in case of dissociating monomers there are some consistency conditions that correlate the concentration of $Na^{+}$, monomer and pH.
+The correlations are given by the material balance, dissociation constants and electro neutrality condition. I tried to introduce some controls on them. In case user 
+does not know the $Na^{+}$ concentration, he can leave it null and the routine will guess a reasonable value. Vice versa if the the cation concentration is known the initial pH 
+is evaluated.\\ 
+The prediction of polymer quality forces the achievement of the Molecular Weight Distribution (MWD). Since the polymer macromolecules are
+ produced on statistical base in less than one second and the polymerization time is in the order of several minutes, we commonly speak 
+ in term of \emph{instantaneous} and \emph{accumulated} MWD. The ode equations are able to predict the 
+instantaneous MWD but the achievement of the measurable accumulated MWD can be done only at the end of the system integration. \\
+The equations used for the ode integration are the following in case of linear polymer.\\
+\begin{align}
+\tau = & K_{td} \frac{K_{pp} M R }{{(K_{pp} M)}^2}+\frac{K_{fM}}{K_{pp}}+\frac{K_{fS}S}{K_{pp} M}+\frac{K_{fCTA}\mathit{CTA}}{K_{pp} M}\nonumber \\ &+\frac{K_{fCCTA}\mathit{CCTA}}{K_{pp} M} +\frac{K_{fZ}Z}{K_{pp} M}
+\end{align}
+\begin{equation}
+\beta = K_{tc} \frac{K_{pp} M R}{(K_{pp} M)^2}
+\end{equation}
+\begin{equation}
+Mn =\frac{\mathit{MW_M}}{\tau+\beta/2}
+\end{equation}
+\begin{equation}
+Mw=\frac{\mathit{MW_M}(2 \tau+3 \beta)}{(\tau+\beta)^2}
+\end{equation}
+Vice versa in case of non linear polymer, we use the following set.\\
+\begin{align}
+\gamma =1+  & \frac{\mathit{RI}}{K_{pp} M R} + \frac{K_{fM}}{K_{pp}} + \frac{K_{fS}S}{K_{pp} M}+ \frac{K_{fCTA}\mathit{CTA}}{K_{pp} M}+\frac{K_{fCCTA}\mathit{CCTA}}{K_{pp} M}\nonumber \\ &+ \frac{K_{fZ}Z}{K_{pp} M}
+\end{align}
+\begin{align}
+\lambda =\frac{K_{tb} R}{K_{pp} M} & +\frac{K_{fM}}{K_{pp}}+ \frac{K_{fS}S}{K_{pp} M}+ \frac{K_{fCTA}\mathit{CTA}}{K_{pp} M}+\frac{K_{fCCTA}\mathit{CCTA}}{K_{pp} M}\nonumber \\ &+ \frac{K_{fZ}Z}{K_{pp} M}+\frac{K_{fP} \mu_1}{K_{pp} M}
+\end{align}
+\begin{align}
+\eta = 1+ &  \frac{\mathit{RI}}{K_{pp} M R}+\frac{K_{fM}}{K_{pp}} + \frac{K_{fS}S}{K_{pp} M}+ \frac{K_{fCTA}\mathit{CTA}}{K_{pp} M}\nonumber \\ & +\frac{K_{fCCTA}\mathit{CCTA}}{K_{pp} M}+ \frac{K_{fZ}Z}{K_{pp} M}  +\frac{K_{fP} \mu_1}{K_{pp} M}+\frac{K_p^{*} \mu_1}{K_{pp} M}+K_p^{**} \frac{\mu_2}{M}
+\end{align}
+\begin{equation}
+Mn =\mathit{MW_M}\frac{\mu_1}{\mu_0}
+\end{equation}
+\begin{equation}
+Mw =\mathit{MW_M}\frac{\mu_2}{\mu_1}
+\end{equation}
+In both cases, at the end of ode integration a global average needs to be performed using the same integral equations.
+\begin{equation}
+Mn_\mathit{accumulated}=\frac{\int_0^t P dt}{\int_0^t {Mn_m}^{-1} dt}
+\end{equation}
+\begin{equation}
+Mw_\mathit{accumulated}=\frac{\int_0^t Mw_m dt}{\int_0^t P dt}
+\end{equation}
+The classical theory of free radical polymerization always accepts the steady state hypothesis and the inlet flow and outlet flow of 
+radicals negligible in writing the radical balance. This is the most helpful simplification in the model because the radical
+concentration can be easily achieved by an algebraic solution. \\
+\begin{equation}
+\mathit{RI} =2 K_d \ I + 2 K_{d1} \ \mathit{HA} +2 K_{d2} \ A^{-}
+\end{equation}
+\begin{equation}
+R=\frac{1}{2} \left(\sqrt {\left(\frac{K_{fZ}Z}{K_{tb}}\right)^2 +4 \frac{\mathit{RI}}{K_{tb}} } \ - \frac{K_{fZ}Z}{K_{tb}}\right)
+\end{equation}
+The process parameters required for the polymerization are very few although not always easy the measure. They are mainly related to thermochemical
+ effects such as heat transfer parameters. They are listed in the table. The equations involve the
+calculation of enthalpy in the inlet and outlet flows. A precise calculation is not possible but the weak dependency on chemical composition change 
+mitigates the error on the energy balance. Usually, the reference enthalpy is set to null.
+
+\begin{table}
+\caption{Process conditions in vector \emph{pars}}
+\begin{center}
+\begin{tabular}{ c | c | c | l }
+   \hline                       
+   Quantity & Symbol & Units & Meaning\\
+  \hline  
+   $X_{\mathit{lim}}$ & Xlim &  - & Limit conversion \\
+   $T_{j}$ &Tj& K & Jacket Temperature \\
+   $\mathit{UA}$ &UA & cal/min K &  Overall heat transfer parameter \\
+   $\mathit{pH}_{0}$ &pH0&  & pH at the beginning of polymerization \\
+\end{tabular}
+\end{center}
+\end{table}
+\begin{equation}
+H_{in}=H_0+C_{pin}(T_{in}-T_0)
+\end{equation}
+\begin{equation}
+H=H_0+C_{p}(T-T_0)
+\end{equation}
+Finally, the last set of parameters required for integration are the data related to inlet and outlet flow, if any are present.
+The model allows the possibility to have flow for each kind of chemical ingredients and customizable start and stop timing.
+This is very important in case of MWD control since the variation of initiator or transfer agent feed may drastically change the size of the macromolecules.
+
+\begin{table}
+\caption{Flow conditions in and out of the reactor in vector \emph{pars}}
+\begin{center}
+\scalebox{0.6}{
+\begin{tabular}{ c | c | c | l }
+   \hline                       
+   Quantity & Symbol & Units & Meaning\\
+  \hline  
+   $T_{in}$ &Tin & K & Temperature of flow into the reactor \\
+   $F_{inM}$ &FinM & mol/min & Molar Monomer flow into the reactor \\
+   $F_{inI}$ &FinI & mol/min & Molar Initiator flow into the reactor \\
+   $F_{inZ}$ &FinZ & mol/min & Molar Inhibitor flow into the reactor \\
+   $F_{inS}$ &FinS & mol/min & Molar Solvent flow into the reactor \\
+   $F_{inCTA}$ &FinCTA & mol/min & Molar Transfer Agent flow into the reactor \\
+   $F_{inCCTA}$ &FinCCTA & mol/min & Molar Catalytic Transfer Agent flow into the reactor \\
+   $F_{inNa}$ &FinNa & mol/min & Molar Sodium Cation flow into the reactor \\
+   $F_{wout}$ &FWout & kg/min & Weight  flow out from the reactor \\
+   $F_{inM0}$ &FinM0 & mol/min &Initial molar Monomer flow into the reactor \\
+   $F_{inI0}$ &FinI0 & mol/min &Initial molar Initiator flow into the reactor \\
+   $F_{inZ0}$ &FinZ0 & mol/min &Initial molar Inhibitor flow into the reactor \\
+   $F_{inS0}$ &FinS0 & mol/min & Initial molar Solvent flow into the reactor \\
+   $F_{inCTA0}$ &FinCTA0 & mol/min & Initial molar Transfer Agent flow into the reactor \\
+   $F_{inCCTA0}$ &FinCCTA0 & mol/min & Initial molar Catalytic Transfer Agent flow into the reactor \\
+   $F_{inNa0}$ &FinNa0 & mol/min & Initial molar Sodium Cation flow into the reactor \\
+   $F_{wout0}$ &FWout0 & kg/min & Initial weight  flow out from the reactor \\
+   $t_{inM},t_{endM} $ & tinM,tendM & min & Time of start and end of continuous Monomer flow\\
+   $t_{inI},t_{endI} $ & tinI,tendI & min & Time of start and end of continuous Initiator flow\\
+   $t_{inS},t_{endS} $ & tinS,tendS & min & Time of start and end of continuous Solvent flow\\
+   $t_{inZ},t_{endZ} $ & tinZ,tendZ & min & Time of start and end of continuous Inhibitor flow\\
+   $t_{inCTA},t_{endCTA} $ & tinCTA,tendCTA & min & Time of start and end of continuous Transfer Agent flow\\
+   $t_{inCCTA},t_{endCCTA} $ & tinCCTA,tendCCTA & min & Time of start and end of continuous Catalytic Transfer Agent flow\\
+   $t_{inNa},t_{endNa} $ & tinNa,tendNa & min & Time of start and end of continuous Sodium Cation flow\\
+   $t_{inout},t_{endout} $ & tinout,tendout & min & Time of start and end of continuous Monomer flow\\
+\end{tabular}}
+\end{center}
+\end{table}
+
+\begin{thebibliography}{9}
+\bibitem{rcran}
+	\url{http://cran.r-project.org/}
+\bibitem{soetaert2010}
+   Soetaert K, Petzoldt T, Setzer R (2010a).
+   "Solving Differential Equations in R: Package \textbf{deSolve.}"
+   \emph{Journal of Statistical Software}, 33(9), 1–25. ISSN 1548-7660. 
+	\url{ http://www.jstatsoft.org/v33/i09}.
+\bibitem{gao1996}
+	Gao J, Penlidis A (1996) \emph{"A Comprehensive Simulator/Database Package for Reviewing Free-Radical Homopolymerization"}, J.M.S.-	Rev.Macromol.Chem.Phys, C36(2), 199-404.
+\bibitem{kui1992}
+	Kuindersma M, (1992) \emph{"On the Modelling of Free-Radical Polymerization Reactions: Homopolymerization"}, M.A.Sc.Thesis, Chemical 	Engineering, University of Waterloo.
+\bibitem{gao1992}
+	Gao J, (1992) \emph{"Mathematical Modelling of Homopolymerizations: Simulation Package/Database Extensions"}, M.A.Sc.Thesis, Chemical Engineering, University of Waterloo.
+\bibitem{law2012}	
+	Lawrence M F, Verzani J (2012) \emph{"Programming Graphical User Interfaces in R"}, CRC Press Taylor \& Francis Group.
+
+\end{thebibliography}
+
+\end{document}
